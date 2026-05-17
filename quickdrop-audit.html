@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickDrop — Technical Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #09090b;
+    --bg2: #111113;
+    --bg3: #18181b;
+    --bg4: #1f1f23;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #fafafa;
+    --muted: #a1a1aa;
+    --muted2: #71717a;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --accent3: #93c5fd;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --teal: #14b8a6;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(9,9,11,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo .dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 4rem 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent2);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    margin-bottom: 2.5rem;
+    max-width: 900px;
+  }
+
+  .hero h1 .line2 {
+    color: var(--muted2);
+  }
+
+  .hero h1 .accent { color: var(--accent2); }
+
+  .hero-desc {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 560px;
+    font-weight: 300;
+    margin-bottom: 3rem;
+    line-height: 1.8;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-meta-item .label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-meta-item .value {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .hero-repo {
+    margin-top: 2.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+  }
+
+  .btn-ghost:hover {
+    color: var(--text);
+    border-color: var(--border2);
+    background: var(--bg3);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 100px 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-tag::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 600px;
+    font-weight: 300;
+    margin-bottom: 3.5rem;
+    line-height: 1.8;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 4rem;
+  }
+
+  /* APP OVERVIEW */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5px;
+    background: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+
+  .overview-cell {
+    background: var(--bg2);
+    padding: 2rem 2.5rem;
+  }
+
+  .overview-cell.span2 {
+    grid-column: span 2;
+  }
+
+  .overview-cell .cell-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+
+  .overview-cell .cell-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .overview-cell p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+
+  .stat-item .num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-item .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted2);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .tag-blue { color: var(--accent3); border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.08); }
+  .tag-green { color: #86efac; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+  .tag-purple { color: #d8b4fe; border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.08); }
+  .tag-amber { color: #fcd34d; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+  .tag-teal { color: #5eead4; border-color: rgba(20,184,166,0.3); background: rgba(20,184,166,0.08); }
+  .tag-red { color: #fca5a5; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+
+  /* CARDS */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+
+  .card {
+    background: var(--bg2);
+    padding: 2rem 2.5rem;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .card:hover { background: var(--bg3); }
+
+  .card-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .card-icon-blue { background: rgba(59,130,246,0.15); color: var(--accent2); }
+  .card-icon-green { background: rgba(34,197,94,0.12); color: var(--green); }
+  .card-icon-purple { background: rgba(168,85,247,0.12); color: var(--purple); }
+  .card-icon-amber { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .card-icon-teal { background: rgba(20,184,166,0.12); color: var(--teal); }
+  .card-icon-red { background: rgba(239,68,68,0.12); color: var(--red); }
+
+  .card h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 300;
+    line-height: 1.75;
+  }
+
+  .card .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .verdict-good { color: var(--green); }
+  .verdict-bad { color: var(--red); }
+  .verdict-warn { color: var(--amber); }
+
+  .verdict-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* CODE BLOCKS */
+  .code-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .code-header {
+    background: var(--bg4);
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-header .dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .code-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  pre {
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .kw { color: #c084fc; }
+  .fn { color: var(--accent2); }
+  .str { color: #86efac; }
+  .num { color: #fcd34d; }
+  .cm { color: var(--muted2); font-style: italic; }
+  .type { color: #5eead4; }
+
+  /* FINDINGS */
+  .finding {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    background: var(--bg2);
+  }
+
+  .finding-header {
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+
+  .finding-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted2);
+    min-width: 32px;
+  }
+
+  .finding-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  .badge-strength { background: rgba(34,197,94,0.15); color: #86efac; }
+  .badge-issue { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .badge-info { background: rgba(59,130,246,0.15); color: var(--accent3); }
+  .badge-warn { background: rgba(245,158,11,0.15); color: #fcd34d; }
+
+  .finding-body {
+    padding: 1.5rem 1.75rem;
+  }
+
+  .finding-body p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.8;
+    margin-bottom: 0.75rem;
+  }
+
+  .finding-body p:last-child { margin-bottom: 0; }
+
+  /* MICRO OPT TABLE */
+  .mo-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .mo-item {
+    background: var(--bg2);
+    display: grid;
+    grid-template-columns: 48px 1fr 1fr auto;
+    gap: 0;
+    align-items: center;
+  }
+
+  .mo-item:hover { background: var(--bg3); }
+
+  .mo-num {
+    padding: 1.25rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted2);
+    text-align: center;
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mo-name {
+    padding: 1.25rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    border-right: 1px solid var(--border);
+  }
+
+  .mo-name small {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted2);
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  .mo-desc {
+    padding: 1.25rem 1.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 300;
+    line-height: 1.65;
+    border-right: 1px solid var(--border);
+  }
+
+  .mo-impact {
+    padding: 1.25rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* TIMELINE / SCENARIOS */
+  .scenario {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 0 2rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scenario:last-child { border-bottom: none; }
+
+  .scenario-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-top: 4px;
+  }
+
+  .scenario-label {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  .scenario-body {}
+
+  .scenario-body h4 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+
+  .scenario-body p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-weight: 300;
+    line-height: 1.8;
+    margin-bottom: 0.5rem;
+  }
+
+  .metrics-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 1rem 0;
+  }
+
+  .metric-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .metric-pill .mp-val {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .metric-pill .mp-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .aspect-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1.25rem;
+  }
+
+  .aspect {
+    background: var(--bg3);
+    padding: 1rem 1.25rem;
+  }
+
+  .aspect .asp-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .asp-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .aspect p {
+    color: var(--muted);
+    font-size: 0.83rem;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  /* FIX PROPOSALS */
+  .fix-proposal {
+    background: var(--bg3);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .fix-proposal .fix-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .fix-proposal p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 300;
+    line-height: 1.75;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer p {
+    color: var(--muted2);
+    font-size: 0.85rem;
+    font-weight: 300;
+  }
+
+  footer a {
+    color: var(--accent2);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  footer a:hover { color: var(--text); }
+
+  /* SCROLL ANIMATIONS */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 1.5rem 60px; }
+    section { padding: 60px 1.5rem; }
+    .divider { margin: 0 1.5rem; }
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-cell.span2 { grid-column: span 1; }
+    .mo-item { grid-template-columns: 1fr; }
+    .mo-num, .mo-name, .mo-desc { border-right: none; border-bottom: 1px solid var(--border); }
+    .scenario { grid-template-columns: 1fr; }
+    footer { padding: 2rem 1.5rem; }
+    .aspect-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="dot"></span>
+    QuickDrop Audit
+  </a>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#report3">Report 3</a></li>
+    <li><a href="#report4">Report 4</a></li>
+    <li><a href="#micro">Micro-opt</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">ISIS-3510 · Mobile App Development · Team 11 – iOS</div>
+  <h1>
+    Technical<br>
+    <span class="line2">Audit</span>
+    <br><span class="accent">QuickDrop</span>
+  </h1>
+  <p class="hero-desc">
+    An in-depth analysis of QuickDrop's architecture, eventual connectivity strategies, caching, memory management, threading, performance profiling, and micro-optimization patterns.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="label">Commits</span>
+      <span class="value">575</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">Stars</span>
+      <span class="value">163</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">Language</span>
+      <span class="value">Swift</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">Platform</span>
+      <span class="value">iOS / macOS</span>
+    </div>
+  </div>
+  <div class="hero-repo">
+    <a href="https://github.com/leonboe1/QuickDrop" class="btn btn-primary" target="_blank">
+      ↗ github.com/leonboe1/QuickDrop
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- APP OVERVIEW -->
+<section id="overview">
+  <div class="section-tag">App Report 1 & 2</div>
+  <h2 class="section-title">Application Overview</h2>
+  <p class="section-sub">QuickDrop is an open-source wireless file transfer utility bridging Android and Apple ecosystems over local Wi-Fi using the Quick Share protocol — no cloud, no cables.</p>
+
+  <div class="overview-grid reveal">
+    <div class="overview-cell span2">
+      <div class="cell-label">What it does</div>
+      <div class="cell-title">Cross-Platform File Transfer Without the Cloud</div>
+      <p>QuickDrop enables seamless, encrypted peer-to-peer file transfers between Android devices and Apple ecosystems (iPhone, iPad, Mac) using the Nearby Share protocol over local Wi-Fi. It implements ECDH P-256 key exchange, AES-256-CBC encryption, and HMAC-SHA256 authentication — all without touching a cloud server.</p>
+      <div class="tag-row">
+        <span class="tag tag-blue">Swift</span>
+        <span class="tag tag-green">SwiftUI</span>
+        <span class="tag tag-purple">NWConnection</span>
+        <span class="tag tag-amber">mDNS / NWBrowser</span>
+        <span class="tag tag-teal">UKEY2</span>
+        <span class="tag tag-blue">AES-256-CBC</span>
+        <span class="tag tag-green">MVVM</span>
+        <span class="tag tag-purple">GCD</span>
+      </div>
+    </div>
+    <div class="overview-cell">
+      <div class="cell-label">Revenue model</div>
+      <div class="cell-title">Freemium + Lifetime</div>
+      <p>Free tier with limited transfers. QuickDrop+ unlocks unlimited transfers via monthly (COP $9,900), yearly (COP $24,900), or lifetime (COP $39,900) plans.</p>
+    </div>
+    <div class="overview-cell">
+      <div class="cell-label">Repository health</div>
+      <div class="cell-title">Mature & Active Codebase</div>
+      <div class="stat-row">
+        <div class="stat-item">
+          <span class="num">575</span>
+          <span class="stat-label">Commits</span>
+        </div>
+        <div class="stat-item">
+          <span class="num">163</span>
+          <span class="stat-label">Stars</span>
+        </div>
+        <div class="stat-item">
+          <span class="num">3</span>
+          <span class="stat-label">Forks</span>
+        </div>
+      </div>
+    </div>
+    <div class="overview-cell">
+      <div class="cell-label">Architecture</div>
+      <div class="cell-title">MVVM + Service Layer</div>
+      <p>Clean separation: NearbyShare module has zero UIKit/SwiftUI imports — embeddable in any target. Singleton managers, Delegate/Observer protocol chains, and Template Method on NearbyConnection.</p>
+    </div>
+    <div class="overview-cell">
+      <div class="cell-label">Security model</div>
+      <div class="cell-title">End-to-End Encrypted</div>
+      <p>UKEY2 protocol → ECDH P-256 → AES-256-CBC + HMAC-SHA256. 4-digit PIN verification against MITM. Trusted certificates in Keychain. Pairing tokens expire in 5 minutes.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REPORT 3 -->
+<section id="report3">
+  <div class="section-tag">App Report 3</div>
+  <h2 class="section-title">Connectivity, Caching<br>& Memory</h2>
+  <p class="section-sub">Analysis of eventual connectivity strategies, caching structures, memory management mechanisms, and threading concurrency patterns found in the QuickDrop codebase.</p>
+
+  <!-- ECn -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; color: var(--muted); letter-spacing: -0.01em;">Eventual Connectivity</h3>
+
+  <div class="cards-grid reveal">
+    <div class="card">
+      <div class="card-icon card-icon-green">✓</div>
+      <h3>NWPathMonitor — Reactive Detection</h3>
+      <p>Subscribed on a dedicated serial queue. Each path change dispatches to main to update the <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">@Published isConnectedToLocalNetwork</code>. The UI disables the send button immediately — no polling, no silent failures.</p>
+      <div class="verdict verdict-good"><span class="verdict-dot" style="background:var(--green)"></span> Good ECn Practice</div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-teal">☽</div>
+      <h3>AllowedWorkMonitor — Sleep/Wake Cycle</h3>
+      <p>Observes 4 NSWorkspace notifications: screensDidSleep, screensDidWake, sessionDidResignActive, sessionDidBecomeActive. Stops mDNS advertisement on sleep, restarts on wake — preventing stale device entries from accumulating on the network.</p>
+      <div class="verdict verdict-good"><span class="verdict-dot" style="background:var(--green)"></span> Good ECn Practice</div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-blue">⟲</div>
+      <h3>scenePhase Observer — Foreground/Background</h3>
+      <p>ContentView's <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">.onChange(of: scenePhase)</code> stops NWBrowser and mDNS advertisement when backgrounded, restarts on foreground. Device list is always fresh after each foreground transition.</p>
+      <div class="verdict verdict-good"><span class="verdict-dot" style="background:var(--green)"></span> Good ECn Practice</div>
+    </div>
+    <div class="card" style="border-left: 2px solid rgba(239,68,68,0.4);">
+      <div class="card-icon card-icon-red">✕</div>
+      <h3>Missing Transfer Recovery — Anti-Pattern</h3>
+      <p>If Wi-Fi drops mid-transfer, QuickDrop immediately deletes the temp file and reports failure. There is no byte-level checkpoint, no grace period, and no distinction between intentional cancellation and network loss. The user must restart from zero for a transient fault.</p>
+      <div class="code-block" style="margin-top:1rem;">
+        <div class="code-header">
+          <div class="dots">
+            <div class="code-dot" style="background:#ef4444"></div>
+            <div class="code-dot" style="background:#f59e0b"></div>
+            <div class="code-dot" style="background:#22c55e"></div>
+          </div>
+          <span>Proposed Fix Sketch</span>
+        </div>
+        <pre><span class="kw">private func</span> <span class="fn">disconnectDueToNetworkLoss</span>() {
+  <span class="cm">// Do NOT delete files immediately</span>
+  <span class="kw">let</span> gracePeriodTask = <span class="type">DispatchWorkItem</span> {
+    [<span class="kw">weak</span> self] <span class="kw">in</span>
+    self?.<span class="fn">deleteAllTempFiles</span>()
+  }
+  <span class="type">NearbyConnection</span>.dispatchQueue
+    .<span class="fn">asyncAfter</span>(deadline: .now() + <span class="num">1800</span>,
+               execute: gracePeriodTask)
+  retryTask = gracePeriodTask
+}</pre>
+      </div>
+      <div class="verdict verdict-bad"><span class="verdict-dot" style="background:var(--red)"></span> ECn Anti-Pattern</div>
+    </div>
+  </div>
+
+  <!-- Caching -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin: 4rem 0 2rem; color: var(--muted); letter-spacing: -0.01em;">Caching Strategies</h3>
+
+  <div class="cards-grid reveal">
+    <div class="card">
+      <div class="card-icon card-icon-purple">◈</div>
+      <h3>UserDefaults Write-Through Cache</h3>
+      <p>All user preferences are <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">@Published</code> properties initialized from UserDefaults at launch. A <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">didSet</code> observer writes back synchronously on every mutation. Reads are O(1) from RAM.</p>
+      <p style="margin-top:0.75rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted2);">Storage footprint: ~600–2,100 bytes total</p>
+      <div class="tag-row"><span class="tag tag-purple">Write-Through</span><span class="tag tag-blue">UserDefaults</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-amber">🔒</div>
+      <h3>Security-Scoped Bookmark Cache</h3>
+      <p>A private <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">Optional&lt;URL&gt;</code> caches the resolved, access-granted save directory URL for the lifetime of the app. <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">startAccessingSecurityScopedResource()</code> is a kernel-level operation — called once, not per file.</p>
+      <p style="margin-top:0.75rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted2);">~400 bytes RAM vs 500–2,000 bytes on disk</p>
+      <div class="tag-row"><span class="tag tag-amber">Single Entry</span><span class="tag tag-teal">Kernel Grant</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-teal">⬡</div>
+      <h3>mDNS Device Discovery Dictionary</h3>
+      <p>A <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">Dictionary&lt;EndpointID, FoundServiceInfo&gt;</code> inside the Singleton caches all visible mDNS services. Added on NWBrowser <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">.added</code>, removed on <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">.removed</code>. O(1) lookup. Survives background/foreground transitions.</p>
+      <p style="margin-top:0.75rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted2);">2–10 devices × ~300 bytes = ~600 bytes–3 KB</p>
+      <div class="tag-row"><span class="tag tag-teal">Dictionary Cache</span><span class="tag tag-green">O(1) Lookup</span></div>
+    </div>
+  </div>
+
+  <!-- Memory Management -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin: 4rem 0 2rem; color: var(--muted); letter-spacing: -0.01em;">Memory Management</h3>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">MM-01</span>
+      <span class="finding-title">FileHandle Cleanup in deinit — OutboundNearbyConnection</span>
+      <span class="badge badge-strength">Good Practice</span>
+    </div>
+    <div class="finding-body">
+      <p>Each <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">OutboundNearbyConnection</code> opens one FileHandle per queued file. iOS enforces a per-process file descriptor limit of 256. Without explicit <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">closeFile()</code> in <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">deinit</code>, ARC deallocation of the connection object would leak the POSIX file descriptors, causing subsequent <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">open()</code> calls to fail silently with EMFILE.</p>
+      <p><strong style="color:var(--text)">Data classification:</strong> Transient & Private. Temp file copies live only for the duration of the transfer session in the app's sandboxed temp directory, inaccessible to other processes.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#22c55e"></div></div>
+          <span>OutboundNearbyConnection.swift — deinit</span>
+        </div>
+        <pre><span class="kw">deinit</span> {
+  <span class="kw">for</span> transfer <span class="kw">in</span> queue {
+    transfer.fileHandle?.<span class="fn">closeFile</span>()
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">MM-02</span>
+      <span class="finding-title">NSWorkspace Observer Deregistration — AllowedWorkMonitor</span>
+      <span class="badge badge-strength">Good Practice</span>
+    </div>
+    <div class="finding-body">
+      <p><code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">NSWorkspace.notificationCenter</code> holds strong references to observer blocks. Without <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">removeObserver()</code> in <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">deinit</code>, the notification center would retain the monitor indefinitely — a classic retain cycle causing use-after-free callbacks on a deallocated object.</p>
+      <p><strong style="color:var(--text)">Data classification:</strong> Transient & Private. Observer tokens are runtime handles meaningless across relaunches; screen-state flags are internal system metadata never exposed publicly.</p>
+    </div>
+  </div>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">MM-03</span>
+      <span class="finding-title">Weak Reference Captures in DispatchWorkItem — ReceiveModel</span>
+      <span class="badge badge-strength">Good Practice</span>
+    </div>
+    <div class="finding-body">
+      <p>The macOS progress toast schedules its animated slide-in via <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">DispatchQueue.main.asyncAfter</code>. Without <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">[weak self, weak window]</code>, the closure would strongly retain <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">ReceiveModel</code> for the full delay duration after dismissal, retaining all Combine subscriptions, NWConnection references, and partial file data.</p>
+      <p><strong style="color:var(--text)">Data classification:</strong> Transient & Private. Closure captures UI state (window reference, visibility flag) meaningful only for a single animation frame; it also indirectly holds in-progress transfer data — private user content.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#22c55e"></div></div>
+          <span>ReceiveModel.swift — scheduleToastReveal()</span>
+        </div>
+        <pre><span class="kw">let</span> revealTask = <span class="type">DispatchWorkItem</span> {
+  [<span class="kw">weak</span> self, <span class="kw">weak</span> window] <span class="kw">in</span>
+  <span class="kw">guard let</span> self,
+        self.toastWindow === window <span class="kw">else</span> { <span class="kw">return</span> }
+  self.toastIsVisible = <span class="kw">true</span>
+}
+<span class="type">DispatchQueue</span>.main.<span class="fn">async</span>(execute: revealTask)</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Threading -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin: 4rem 0 2rem; color: var(--muted); letter-spacing: -0.01em;">Threading &amp; Concurrency</h3>
+
+  <div class="cards-grid reveal">
+    <div class="card">
+      <div class="card-icon card-icon-blue">⇅</div>
+      <h3>Main Queue Dispatch</h3>
+      <p>All NWPathMonitor, NWBrowser, and NWConnection callbacks arrive on arbitrary background queues. Every handler that writes to a <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">@Published</code> property first dispatches to <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">DispatchQueue.main.async</code>, enforcing the boundary between the networking layer and the SwiftUI presentation layer.</p>
+      <div class="tag-row"><span class="tag tag-blue">Device Discovery</span><span class="tag tag-blue">Transfer Progress</span><span class="tag tag-blue">Connectivity Status</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-purple">≡</div>
+      <h3>Shared Serial Background Queue</h3>
+      <p>A single <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">static let dispatchQueue</code> on <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">NearbyConnection</code> serializes all NWConnection receive handlers and file I/O across all connection instances. Eliminates the need for explicit locks. Uses <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">.utility</code> QoS to avoid competing with UI rendering.</p>
+      <div class="tag-row"><span class="tag tag-purple">Network I/O</span><span class="tag tag-purple">File Read/Write</span><span class="tag tag-purple">Encryption</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-amber">⏱</div>
+      <h3>DispatchWorkItem + asyncAfter</h3>
+      <p>Three strategic uses: (1) 300ms anti-double-tap guard on device selection, (2) deferred toast reveal to avoid visual pop-in before window positioning, (3) 500ms EOF delay giving the remote peer time to drain all buffered TCP bytes before connection teardown.</p>
+      <div class="tag-row"><span class="tag tag-amber">Anti-Double-Tap</span><span class="tag tag-amber">Toast Reveal</span><span class="tag tag-amber">EOF Delay</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REPORT 4 -->
+<section id="report4">
+  <div class="section-tag">App Report 4</div>
+  <h2 class="section-title">Performance Profiling</h2>
+  <p class="section-sub">Three profiling scenarios executed with Xcode Instruments (Time Profiler, Allocations, Leaks, SwiftUI, Network) on macOS Sequoia — iPhone 15 Pro simulator and macOS target.</p>
+
+  <div class="reveal">
+    <div class="scenario">
+      <div>
+        <div class="scenario-num">Scenario 01</div>
+        <div class="scenario-label">App Launch &amp;<br>Device Discovery</div>
+      </div>
+      <div class="scenario-body">
+        <h4>Application Launch and mDNS Scan</h4>
+        <p>iOS cold launch with Time Profiler and Network instruments attached. 15 seconds of recording without user interaction to capture the full initialization sequence.</p>
+        <div class="metrics-row">
+          <div class="metric-pill"><span class="mp-val">5</span><span class="mp-label">Threads Created</span></div>
+          <div class="metric-pill"><span class="mp-val">0.5%</span><span class="mp-label">Avg CPU (idle)</span></div>
+          <div class="metric-pill"><span class="mp-val">~3s</span><span class="mp-label">mDNS Burst Onset</span></div>
+        </div>
+        <div class="aspect-grid">
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--purple)"></span> GPU Rendering</div>
+            <p>One hitch at t≈0 (14.58 ms) during initial SwiftUI commit to compositor. No recurring long body updates. Latent issue: LinearGradient reconstructed per-frame during active transfers.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--amber)"></span> Overdrawing</div>
+            <p>Empty state minimal — one icon, one text label. Near-zero overdraw. No ZStack conflicts active at launch since no devices are yet discovered.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--green)"></span> Memory</div>
+            <p>Baseline established at 18.35 MiB. NWBrowser and NWPathMonitor objects are small. No upward drift observed during idle.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--red)"></span> Threading</div>
+            <p>Main thread (0x5b13d5) CPU spikes during first 2s. Four background workers created by GCD for NWListener and networking subsystem. All return to near-zero after init burst. Critical: NWBrowser callbacks route to main queue.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div>
+        <div class="scenario-num">Scenario 02</div>
+        <div class="scenario-label">Outbound<br>File Transfer</div>
+      </div>
+      <div class="scenario-body">
+        <h4>Sending a File to a Remote Device</h4>
+        <p>macOS target profiled with Time Profiler for 30 seconds during idle and file selection. 140ms total CPU across the session — an extremely efficient profile.</p>
+        <div class="metrics-row">
+          <div class="metric-pill"><span class="mp-val">140ms</span><span class="mp-label">Total CPU Time</span></div>
+          <div class="metric-pill"><span class="mp-val">0.5%</span><span class="mp-label">Average CPU Load</span></div>
+          <div class="metric-pill"><span class="mp-val">2.24s</span><span class="mp-label">Foreground→Background</span></div>
+        </div>
+        <div class="aspect-grid">
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--purple)"></span> GPU Rendering</div>
+            <p>During active transfer, <code style="font-family:var(--font-mono);font-size:0.78em;">progressValue</code> @Published updates at high frequency, forcing DeviceButtonLabel re-renders — each constructs a new LinearGradient value type inline. This is the scenario where the latent GPU issue becomes real.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--amber)"></span> Overdrawing</div>
+            <p>The ZStack with LUIButton vs DeviceFilePickerButton is active here. SwiftUI evaluates both conditional branches during diffing — unnecessary layer creation for the inactive branch.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--green)"></span> Memory</div>
+            <p>512 KB file chunks are allocated and released per-send-cycle in a predictable sawtooth pattern. ARC reclaims each Data buffer after the NWConnection write completes. Constant memory usage regardless of file size.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--red)"></span> Threading</div>
+            <p>300ms DispatchWorkItem anti-double-tap guard is active. 500ms EOF DispatchWorkItem fires after final payload frame. All file I/O stays on the shared serial background queue — main thread free.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div>
+        <div class="scenario-num">Scenario 03</div>
+        <div class="scenario-label">Inbound File<br>Reception</div>
+      </div>
+      <div class="scenario-body">
+        <h4>Receiving a File from an Android Device</h4>
+        <p>Allocations and Leaks instruments run simultaneously for 38–42 seconds to capture memory baseline and verify ARC correctness. Seven heap scans. Zero leaked objects.</p>
+        <div class="metrics-row">
+          <div class="metric-pill"><span class="mp-val">18.35 MiB</span><span class="mp-label">Persistent Heap</span></div>
+          <div class="metric-pill"><span class="mp-val">103,603</span><span class="mp-label">Total Allocations</span></div>
+          <div class="metric-pill"><span class="mp-val">75.5%</span><span class="mp-label">Transient Allocs</span></div>
+          <div class="metric-pill"><span class="mp-val">0</span><span class="mp-label">Memory Leaks</span></div>
+          <div class="metric-pill"><span class="mp-val">304 KiB</span><span class="mp-label">CoreAnimation GPU</span></div>
+        </div>
+        <div class="aspect-grid">
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--purple)"></span> GPU Rendering</div>
+            <p>QuickDropToastView (340×65pt fixed) appears. Small surface area means minimal compositor work. Three states handled via nested conditionals in a single body — no separate render passes but adds cognitive overhead to the view.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--amber)"></span> Overdrawing</div>
+            <p>The toast uses a semi-transparent background overlaying existing content — one unavoidable compositing layer by design. The .opacity(0)-based "Device Not Shown" button below remains in the layout tree and is processed by the compositor even when invisible.</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--green)"></span> Memory</div>
+            <p>Flat allocation graph — no upward drift confirmed. 7 Leaks scans = 7 green checkmarks. [weak self] in DispatchSourceTimer handlers correctly breaks the timer-closure-self retain cycle. Zero memory leaks validated. No GC — iOS uses ARC (compile-time retain/release injection).</p>
+          </div>
+          <div class="aspect">
+            <div class="asp-label"><span class="asp-dot" style="background:var(--red)"></span> Threading</div>
+            <p>scheduleToastReveal() defers visibility update to next run-loop tick via DispatchQueue.main.async to prevent visual pop-in before window positioning. [weak self, weak window] captures prevent ReceiveModel from being retained after toast dismissal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Problems and Strengths -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin: 4rem 0 2rem; color: var(--muted); letter-spacing: -0.01em;">Performance Problems &amp; Strengths</h3>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">P-01</span>
+      <span class="finding-title">NWBrowser on Main Queue — Threading Problem</span>
+      <span class="badge badge-issue">Critical Issue</span>
+    </div>
+    <div class="finding-body">
+      <p>In <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">NearbyConnectionManager.swift:459</code>, the NWBrowser is started with <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">queue: .main</code>. Every DNS-SD result callback — firing on each device discovery or removal — runs directly on the Main Thread, which is simultaneously responsible for all SwiftUI layout passes. This caused the Main Thread CPU spikes visible at launch.</p>
+      <p>This is architecturally inconsistent: NWPathMonitor correctly uses a dedicated <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">connectionMonitorQueue</code> and all socket I/O uses <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">NearbyConnection.dispatchQueue</code>. The NWBrowser is the only component that routes callbacks directly to main.</p>
+      <div class="fix-proposal">
+        <div class="fix-label">→ Proposed Fix</div>
+        <p>Change <code style="font-family:var(--font-mono);font-size:0.82em;">browser.start(queue: .main)</code> to <code style="font-family:var(--font-mono);font-size:0.82em;">browser.start(queue: NearbyConnection.dispatchQueue)</code>. One-line change, zero functional impact, eliminates main-thread discovery callbacks.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">P-02</span>
+      <span class="finding-title">Zero Memory Leaks — ARC Correct</span>
+      <span class="badge badge-strength">Strength</span>
+    </div>
+    <div class="finding-body">
+      <p>Seven consecutive Leaks instrument scans returned zero leaked objects. The combination of pre-allocated buffers, disciplined ARC usage, and <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">[weak self]</code> in both DispatchSourceTimer event handlers (lines 687 and 707) correctly breaks the timer-closure-self retain cycle. The 75.5% transient allocation ratio demonstrates correct ARC behavior — per-frame Data buffers created in the send path are released immediately after each NWConnection write completes.</p>
+      <p><strong style="color:var(--text)">ARC vs GC note:</strong> iOS does not use a Garbage Collector. Swift's ARC inserts <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">retain</code>/<code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">release</code> calls at compile time — deallocation is deterministic (reference count → 0), not periodic. There is no GC pause, no safepoint, no heap scan cycle. This is why the allocation graph is flat with no periodic memory spikes.</p>
+    </div>
+  </div>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">P-03</span>
+      <span class="finding-title">Overdrawing — ZStack + Opacity Patterns</span>
+      <span class="badge badge-warn">Latent Issue</span>
+    </div>
+    <div class="finding-body">
+      <p><strong style="color:var(--text)">Pattern 1 — ZStack conditional (ContentView.swift:147–159):</strong> Each device row is wrapped in a ZStack with a conditional between LUIButton and DeviceFilePickerButton. SwiftUI evaluates both branches during diffing. Replacing with a top-level if/else would allow SwiftUI to skip instantiation of the inactive branch entirely.</p>
+      <p><strong style="color:var(--text)">Pattern 2 — Opacity-based visibility (ContentView.swift:189):</strong> The "Device Not Shown" button uses <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">.opacity(showsLoadingIndicator ? 1 : 0)</code>. When opacity is 0, the view stays in the layout tree and the compositor still processes its layer. Replace with <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">.hidden()</code> or a conditional to remove it from the render hierarchy entirely.</p>
+    </div>
+  </div>
+
+  <!-- Leak Libraries -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin: 4rem 0 2rem; color: var(--muted); letter-spacing: -0.01em;">Leak Management Libraries for Swift/iOS</h3>
+
+  <div class="cards-grid reveal">
+    <div class="card">
+      <div class="card-icon card-icon-blue">⬡</div>
+      <h3>Xcode Memory Graph Debugger</h3>
+      <p>Built into Xcode. Pauses the app and visualizes the complete object reference graph. Unlike Instruments Leaks (which finds unreachable objects), Memory Graph finds retained-but-alive cycles — objects with non-zero refcount that will never be released. Ideal complement to the Leaks instrument for QuickDrop's timer and delegate chains.</p>
+      <div class="tag-row"><span class="tag tag-blue">Native</span><span class="tag tag-green">Reference Graph</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-purple">◈</div>
+      <h3>LifetimeTracker</h3>
+      <p>Open-source library. Lets you declare expected maximum instance counts per class. Shows a visual overlay alert if any class exceeds its limit. Directly applicable to <code style="font-family:var(--font-mono);font-size:0.8em;background:var(--bg4);padding:2px 6px;border-radius:4px;">NearbyConnection</code> — the count should never exceed active concurrent transfers.</p>
+      <div class="tag-row"><span class="tag tag-purple">Third-Party</span><span class="tag tag-amber">Instance Counting</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-red">⚠</div>
+      <h3>AddressSanitizer (ASan)</h3>
+      <p>Compiler-integrated. Activated in the Xcode scheme, it instruments the binary to detect use-after-free, buffer overflows, and heap corruption at runtime. Relevant for QuickDrop's manual FileHandle management and raw byte buffer operations in the frame parsing path.</p>
+      <div class="tag-row"><span class="tag tag-red">Compiler</span><span class="tag tag-teal">Use-After-Free</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MICRO OPTIMIZATIONS -->
+<section id="micro">
+  <div class="section-tag">App Report 4 — Section 4</div>
+  <h2 class="section-title">Micro-Optimization<br>Strategies</h2>
+  <p class="section-sub">Seven micro-optimizations identified in the QuickDrop codebase, each documented with location, rationale, and purpose.</p>
+
+  <div class="mo-grid reveal">
+    <div class="mo-item">
+      <div class="mo-num">01</div>
+      <div class="mo-name">TCP_NODELAY Flag<small>NearbyConnectionManager.swift:734</small></div>
+      <div class="mo-desc">Disables Nagle's algorithm for outbound connections. TCP normally buffers small packets and coalesces them — this introduces latency for the small UKEY2 handshake frames (ConnectionRequest, ClientInit, ClientFinish) sent before any file data flows.</div>
+      <div class="mo-impact"><span style="color:var(--accent2)">↓</span> Handshake Latency</div>
+    </div>
+    <div class="mo-item">
+      <div class="mo-num">02</div>
+      <div class="mo-name">Pre-Allocated Data Capacity<small>NearbyConnection.swift:282 — sendFrameAsync()</small></div>
+      <div class="mo-desc">Data(capacity: frame.count + 4) allocates the exact final size before construction. Swift's Data doubles capacity on overflow — specifying the exact size eliminates all intermediate reallocations and copies in the hot path of frame transmission.</div>
+      <div class="mo-impact"><span style="color:var(--green)">↓</span> Heap Pressure</div>
+    </div>
+    <div class="mo-item">
+      <div class="mo-num">03</div>
+      <div class="mo-name">Bitwise Frame Header Parsing<small>NearbyConnection.swift:208 — receiveFrameAsync()</small></div>
+      <div class="mo-desc">The 4-byte big-endian frame length header is decoded via bitwise shift operations on raw bytes: four reads, three shifts, three ORs — all single CPU instructions. Avoids object allocation and method dispatch overhead that a DataReader abstraction would introduce. Executes thousands of times per large file transfer.</div>
+      <div class="mo-impact"><span style="color:var(--green)">↓</span> Parse Overhead</div>
+    </div>
+    <div class="mo-item">
+      <div class="mo-num">04</div>
+      <div class="mo-name">Fixed 512 KB File Chunk Reading<small>OutboundNearbyConnection.swift:521</small></div>
+      <div class="mo-desc">Files are read in fixed 512 KB chunks rather than loaded entirely into memory. Keeps heap usage flat regardless of file size (prevents jetsam on large files), while remaining large enough that per-chunk TCP protocol overhead doesn't dominate throughput. Natural backpressure: next chunk only read after previous completes.</div>
+      <div class="mo-impact"><span style="color:var(--amber)">≈</span> Space-Time Tradeoff</div>
+    </div>
+    <div class="mo-item">
+      <div class="mo-num">05</div>
+      <div class="mo-name">Maximum Frame Length Guard<small>NearbyConnection.swift:19, 209</small></div>
+      <div class="mo-desc">A hard integer comparison against a max frame size constant is performed before any buffer allocation. Without this guard, a malicious peer could send a frame header declaring gigabytes, causing an instant crash or jetsam kill. The guard makes the rejection path essentially free — one comparison before any resource commitment.</div>
+      <div class="mo-impact"><span style="color:var(--red)">↓</span> DoS Prevention</div>
+    </div>
+    <div class="mo-item">
+      <div class="mo-num">06</div>
+      <div class="mo-name">Static Shared Dispatch Queue<small>NearbyConnection.swift:20</small></div>
+      <div class="mo-desc">Declared as static let on NearbyConnection, shared across all connection instances. Per-instance queues would spawn additional threads for each concurrent transfer, increasing scheduler pressure and context-switching. The static queue serializes all connections onto one thread — a thread-pool optimization preventing thread explosion.</div>
+      <div class="mo-impact"><span style="color:var(--purple)">↓</span> Thread Overhead</div>
+    </div>
+    <div class="mo-item">
+      <div class="mo-num">07</div>
+      <div class="mo-name">Pre-Allocated NSMutableData Buffer<small>NearbyConnection.swift:463</small></div>
+      <div class="mo-desc">NSMutableData(capacity:) pre-reserves the internal heap buffer without initializing it, using the total size declared in the protocol's introduction frame before any data flows. Avoids O(log n) reallocations and copies that dynamic growth would cause. Single allocation equal to the final required size.</div>
+      <div class="mo-impact"><span style="color:var(--green)">↓</span> Heap Fragmentation</div>
+    </div>
+  </div>
+
+  <!-- Areas to Optimize -->
+  <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin: 4rem 0 2rem; color: var(--muted); letter-spacing: -0.01em;">Code Areas That Can Be Further Optimized</h3>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">OPT-01</span>
+      <span class="finding-title">LinearGradient Recreated on Every Render — DeviceButtonLabel</span>
+      <span class="badge badge-warn">Optimization Opportunity</span>
+    </div>
+    <div class="finding-body">
+      <p>In <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">ContentView.swift:276–289</code>, DeviceButtonLabel constructs a LinearGradient with hardcoded raw RGB values inline inside the <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">body</code> property. Since body is re-evaluated on every state change — including 60 Hz progressValue updates during transfers — a new LinearGradient struct is constructed on every render pass for every visible device row. LinearGradient is a value type, so this causes unnecessary allocations per render cycle.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#22c55e"></div></div>
+          <span>Proposed Fix — ContentView.swift</span>
+        </div>
+        <pre><span class="cm">// Extract as a static constant — allocated once, shared</span>
+<span class="kw">private static let</span> <span class="fn">deviceGradient</span> = <span class="type">LinearGradient</span>(
+  colors: [
+    <span class="type">Color</span>(red: <span class="num">0.623</span>, green: <span class="num">0.659</span>, blue: <span class="num">0.855</span>),
+    <span class="type">Color</span>(red: <span class="num">0.474</span>, green: <span class="num">0.525</span>, blue: <span class="num">0.796</span>)
+  ],
+  startPoint: .top,
+  endPoint: .bottom
+)</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">OPT-02</span>
+      <span class="finding-title">availableDevices Recomputed on Every Render — DeviceListView</span>
+      <span class="badge badge-warn">Optimization Opportunity</span>
+    </div>
+    <div class="finding-body">
+      <p>In <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">ContentView.swift</code>, <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">availableDevices</code> is declared as an inline computed property inside <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">body</code>. Its <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">contains(where:)</code> call performs a linear scan of the device array on each evaluation. During an active transfer where <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">progressValue</code> fires multiple times per second, this scan executes repeatedly with no change in result.</p>
+      <div class="fix-proposal">
+        <div class="fix-label">→ Proposed Fix</div>
+        <p>Move the computation to a <code style="font-family:var(--font-mono);font-size:0.82em;">@State</code> variable updated only when <code style="font-family:var(--font-mono);font-size:0.82em;">foundDevices</code> or <code style="font-family:var(--font-mono);font-size:0.82em;">selectedDevice</code> actually changes via <code style="font-family:var(--font-mono);font-size:0.82em;">.onChange(of:)</code>. This eliminates redundant linear scans during high-frequency progress updates.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="finding reveal">
+    <div class="finding-header">
+      <span class="finding-num">OPT-03</span>
+      <span class="finding-title">GCD Instead of Swift Structured Concurrency</span>
+      <span class="badge badge-info">Architectural Note</span>
+    </div>
+    <div class="finding-body">
+      <p>QuickDrop uses GCD throughout (DispatchQueue.async, DispatchQueue.main.async, DispatchSourceTimer). Swift 5.5 introduced structured concurrency (async/await, Task, AsyncStream) which provides compile-time data-race safety via <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">@MainActor</code>, automatic cancellation propagation, and cooperative threading on a shared pool — reducing context-switching overhead versus GCD's preemptive threading.</p>
+      <p>The trade-off is intentional: NWConnection's callback-based API integrates more naturally with GCD completion handlers, and the serial queue already provides mutual exclusion. However, <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">@MainActor</code> annotation would enforce main-thread dispatch at compile time, eliminating the need for manual <code style="font-family:var(--font-mono);font-size:0.82em;background:var(--bg3);padding:2px 6px;border-radius:4px;">DispatchQueue.main.async</code> calls scattered across every networking callback.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <p>QuickDrop Technical Audit — ISIS-3510 Mobile App Development</p>
+    <p style="margin-top:4px;">Team 11 iOS · Edward Sánchez · Carlos Santoyo · Juan Ojeda · 2026</p>
+  </div>
+  <a href="https://github.com/leonboe1/QuickDrop" target="_blank">↗ github.com/leonboe1/QuickDrop</a>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
